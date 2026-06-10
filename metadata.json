@@ -1,0 +1,6 @@
+{
+  "name": "Application Intelligence Repository",
+  "description": "Standardize onboarding of enterprise applications and capture knowledge in a structured repository.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
