@@ -14,7 +14,7 @@ export class ApplicationService {
         app =>
           app.name.toLowerCase().includes(query) ||
           app.description.toLowerCase().includes(query) ||
-          (app.owner && app.owner.toLowerCase().includes(query)) ||
+          (app.url && app.url.toLowerCase().includes(query)) ||
           app.status.toLowerCase().includes(query)
       );
     }
@@ -44,9 +44,11 @@ export class ApplicationService {
       id: generateId(),
       name,
       description,
-      owner: dto.owner?.trim() || 'Unspecified Owner',
+      url: dto.url?.trim(),
       status: dto.status || 'Draft',
       notes: dto.notes?.trim() || '',
+      packages: dto.packages || [],
+      metric_blueprints: dto.metric_blueprints || [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       is_deleted: false
@@ -75,8 +77,8 @@ export class ApplicationService {
       updates.description = description;
     }
 
-    if (dto.owner !== undefined) {
-      updates.owner = dto.owner.trim() || 'Unspecified Owner';
+    if (dto.url !== undefined) {
+      updates.url = dto.url?.trim();
     }
 
     if (dto.status !== undefined) {
@@ -89,6 +91,14 @@ export class ApplicationService {
 
     if (dto.notes !== undefined) {
       updates.notes = dto.notes;
+    }
+
+    if (dto.packages !== undefined) {
+      updates.packages = dto.packages;
+    }
+
+    if (dto.metric_blueprints !== undefined) {
+      updates.metric_blueprints = dto.metric_blueprints;
     }
 
     const updated = await ApplicationRepository.update(id, updates);

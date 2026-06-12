@@ -13,11 +13,12 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [owner, setOwner] = useState('');
+  const [url, setUrl] = useState('');
   const [status, setStatus] = useState<Application['status']>('Draft');
+  const [notes, setNotes] = useState('');
   
   // Validation and loading states
-  const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; url?: string; description?: string }>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -26,13 +27,15 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
     if (application) {
       setName(application.name);
       setDescription(application.description);
-      setOwner(application.owner || '');
+      setUrl(application.url || '');
       setStatus(application.status);
+      setNotes(application.notes || '');
     } else {
       setName('');
       setDescription('');
-      setOwner('');
+      setUrl('');
       setStatus('Draft');
+      setNotes('');
     }
     setErrors({});
     setApiError(null);
@@ -42,6 +45,13 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
     const nextErrors: typeof errors = {};
     if (!name.trim()) {
       nextErrors.name = 'Application Name is required.';
+    }
+    if (url.trim()) {
+      try {
+        new URL(url.trim());
+      } catch (e) {
+        nextErrors.url = 'Provide a valid URL (e.g. https://servicedesk.company.com).';
+      }
     }
     if (!description.trim()) {
       nextErrors.description = 'Description is required.';
@@ -61,8 +71,9 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
       await onSubmit({
         name: name.trim(),
         description: description.trim(),
-        owner: owner.trim(),
-        status
+        url: url.trim() || undefined,
+        status,
+        notes: notes.trim()
       });
       onClose();
     } catch (err: any) {
@@ -82,10 +93,10 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
         <div className="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between" id="app-form-header">
           <div>
             <h3 className="font-sans font-bold text-lg text-slate-900">
-              {isEdit ? 'Update Application Registry' : 'Register New Application'}
+              {isEdit ? 'Update Application Registry' : 'Register Existing Application'}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              {isEdit ? 'Modify master metadata fields' : 'Spin up a structured knowledge segment'}
+              {isEdit ? 'Modify master metadata fields' : 'Register a structured knowledge segment of an existing application'}
             </p>
           </div>
           <button
@@ -130,50 +141,38 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
             )}
           </div>
 
-          {/* Row of Owner and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Owner Field */}
-            <div className="space-y-1.5 text-left">
-              <label htmlFor="input-owner" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Application Owner / Team
-              </label>
-              <input
-                id="input-owner"
-                type="text"
-                placeholder="e.g. Alice Doe (IT Operations)"
-                value={owner}
-                onChange={(e) => setOwner(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 text-sm text-slate-800 rounded-xl transition-all shadow-inner"
-              />
-            </div>
-
-            {/* Status Field */}
-            <div className="space-y-1.5 text-left">
-              <label htmlFor="input-status" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Lifecycle Status
-              </label>
-              <select
-                id="input-status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as Application['status'])}
-                className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 text-sm text-slate-800 rounded-xl transition-all shadow-inner"
-              >
-                <option value="Draft">Draft</option>
-                <option value="Active">Active</option>
-                <option value="Archived">Archived</option>
-              </select>
-            </div>
+          {/* Application URL Field */}
+          <div className="space-y-1.5 text-left">
+            <label htmlFor="input-url" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Application URL
+            </label>
+            <input
+              id="input-url"
+              type="text"
+              placeholder="e.g. https://servicedesk.company.com"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className={`w-full bg-slate-50 border ${
+                errors.url ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-indigo-500'
+              } focus:bg-white focus:outline-none px-4 py-2.5 text-sm text-slate-800 rounded-xl transition-all shadow-inner`}
+            />
+            {errors.url && (
+              <p className="text-rose-600 text-xs font-semibold flex items-center space-x-1 pl-1">
+                <AlertCircle size={12} />
+                <span>{errors.url}</span>
+              </p>
+            )}
           </div>
 
           {/* Description Field */}
           <div className="space-y-1.5 text-left">
             <label htmlFor="input-description" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Application Scope & Description <span className="text-rose-500">*</span>
+              Application Description <span className="text-rose-500">*</span>
             </label>
             <textarea
               id="input-description"
               rows={4}
-              placeholder="Describe the application's core purpose, business value, source databases, and upstream integrations..."
+              placeholder="Briefly describe the purpose of this application."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className={`w-full bg-slate-50 border ${
@@ -188,8 +187,23 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
             )}
             <p className="text-[11px] text-slate-400 flex items-center space-x-1.5 select-none pt-0.5">
               <Info size={12} className="text-indigo-400" />
-              <span>Describe entities, tables formats, and system flows to guide your development processes later.</span>
+              <span>Briefly describe the purpose of this application.</span>
             </p>
+          </div>
+
+          {/* Notes Field */}
+          <div className="space-y-1.5 text-left">
+            <label htmlFor="input-notes" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Notes
+            </label>
+            <textarea
+              id="input-notes"
+              rows={3}
+              placeholder="Record any general observations or constraints."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className={`w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 text-sm text-slate-800 rounded-xl transition-all shadow-inner`}
+            />
           </div>
 
           {/* Footer controls */}
@@ -210,7 +224,7 @@ export default function ApplicationForm({ application, onClose, onSubmit }: Appl
               className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center space-x-1.5 px-6 py-2.5 text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/10 cursor-pointer disabled:opacity-50 transition-all"
             >
               <Save size={16} />
-              <span>{loading ? 'Saving...' : isEdit ? 'Update Details' : 'Register App'}</span>
+              <span>{loading ? 'Saving...' : isEdit ? 'Update Details' : 'Register Application'}</span>
             </button>
           </div>
         </form>

@@ -5,42 +5,8 @@ import { Application } from './types';
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'applications.json');
 
-// Initial seed data to make the MVP look production-ready on first launch
-const SEED_DATA: Application[] = [
-  {
-    id: 'app-service-desk',
-    name: 'Service Desk',
-    description: 'Enterprise IT Service Management system for ticketing, incident response, and SLA tracking across global offices.',
-    owner: 'Jane Doe (IT Operations)',
-    status: 'Active',
-    notes: '### Service Desk Discovery Notes\n\n* **SLA Configuration**: Owner confirmed SLA calculation uses `AssignedDate` instead of `CreatedDate` to avoid recording non-work hours.\n* **Integration**: Incidents are synchronized directly with Jira Service Management for engineering escalations.',
-    created_at: '2026-05-15T08:30:00Z',
-    updated_at: '2026-06-01T14:45:00Z',
-    is_deleted: false
-  },
-  {
-    id: 'app-hr-portal',
-    name: 'HR Onboarding',
-    description: 'Self-service portal for employees to manage benefits, submit time-off requests, and undergo quarterly reviews.',
-    owner: 'John Smith (Human Resources)',
-    status: 'Active',
-    notes: '### HR Onboarding Blueprint Notes\n\n* **Database standard**: Tracks employee onboarding progress through background checks and initial provisioning.\n* **Key metrics pending**: We need to define standard formulas for Time-to-Onboard across global remote divisions.',
-    created_at: '2026-05-20T10:00:00Z',
-    updated_at: '2026-05-28T09:15:00Z',
-    is_deleted: false
-  },
-  {
-    id: 'app-procurement',
-    name: 'Procurement System',
-    description: 'Vendor onboarding, validation, purchase order workflows, and catalog invoicing integrations.',
-    owner: 'Alice Johnson (Finance & Procurement)',
-    status: 'Draft',
-    notes: '### Procurement System Discovery Notes\n\n* **Process Flow**: Vendor authorization relies on external validation. Requires double-verification for individual purchases exceeding $5,000.',
-    created_at: '2026-06-05T11:20:00Z',
-    updated_at: '2026-06-05T11:20:00Z',
-    is_deleted: false
-  }
-];
+// Initial seed data is empty to ensure user starts with a clean slate
+const SEED_DATA: Application[] = [];
 
 export class ApplicationRepository {
   private static async ensureInitialized() {

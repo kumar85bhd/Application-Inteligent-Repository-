@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit3, Trash2, Shield, Calendar, ChevronRight, User } from 'lucide-react';
+import { Edit3, Trash2, Shield, Calendar, ChevronRight, Globe } from 'lucide-react';
 import { Application } from '../types';
 
 interface ApplicationCardProps {
@@ -11,7 +11,7 @@ interface ApplicationCardProps {
 }
 
 export default function ApplicationCard({ application, onEdit, onDelete, onView }: ApplicationCardProps) {
-  const { id, name, description, owner, status, created_at } = application;
+  const { id, name, description, url, status, created_at } = application;
 
   // Render correct color tag per standard enterprise statuses
   const getStatusBadge = (appStatus: Application['status']) => {
@@ -52,6 +52,16 @@ export default function ApplicationCard({ application, onEdit, onDelete, onView 
       });
     } catch {
       return isoString;
+    }
+  };
+
+  const getHostname = (urlStr?: string) => {
+    if (!urlStr) return 'No URL provided';
+    try {
+      const target = urlStr.includes('://') ? urlStr : `https://${urlStr}`;
+      return new URL(target).hostname || urlStr;
+    } catch {
+      return urlStr;
     }
   };
 
@@ -106,10 +116,23 @@ export default function ApplicationCard({ application, onEdit, onDelete, onView 
       <div className="border-t border-slate-100 mt-5 pt-4 flex flex-col gap-2.5 text-xs text-slate-500" id={`app-card-footer-${id}`}>
         <div className="flex items-center justify-between text-slate-400">
           <div className="flex items-center space-x-1.5">
-            <User size={13} className="text-slate-400" />
-            <span className="truncate max-w-[140px] text-slate-500 font-medium" title={`Owner: ${owner}`}>
-              {owner || 'Unspecified'}
-            </span>
+            <Globe size={13} className="text-slate-400" />
+            {url ? (
+              <a
+                href={url.includes('://') ? url : `https://${url}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="truncate max-w-[140px] text-indigo-600 hover:text-indigo-800 hover:underline font-medium"
+                title={url}
+              >
+                {getHostname(url)}
+              </a>
+            ) : (
+              <span className="truncate max-w-[140px] text-slate-400 font-medium" title="No URL provided">
+                No URL
+              </span>
+            )}
           </div>
 
           <div className="flex items-center space-x-1.5">
